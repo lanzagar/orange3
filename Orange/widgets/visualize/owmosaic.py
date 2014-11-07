@@ -550,7 +550,7 @@ class OWMosaicDisplay(OWWidget):
         if data.domain.class_var is not None:
             all_attrs.append(data.domain.class_var)
 
-        for i in range(1, len(all_attrs)+1):
+        for i in range(1, len(all_attrs) + 1):
             attr = all_attrs[:i]
             if type(data) == SqlTable:
                 # make all possible pairs of attributes + class_var
