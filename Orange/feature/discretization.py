@@ -106,7 +106,8 @@ class EqualFreq(Discretization):
         if type(data) == Orange.data.sql.table.SqlTable:
             att = attribute.to_sql()
             quantiles = [(i + 1) / self.n for i in range(self.n - 1)]
-            query = data._sql_query(['quantile(%s, ARRAY%s)' % (att, str(quantiles))])
+            query = data._sql_query(['quantile(%s, ARRAY%s)' %
+                                     (att, str(quantiles))])
             with data._execute_sql_query(query) as cur:
                 points = sorted(set(cur.fetchone()[0]))
         else:
