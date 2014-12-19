@@ -13,6 +13,7 @@ Orange Documentation
    modules/feature
    modules/classification
    modules/evaluation
+   modules/statistics
    modules/misc
 
 Development

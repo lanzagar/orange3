@@ -1,8 +1,10 @@
-import random
-import zlib
 import math
 from numbers import Real
+import random
+import zlib
+
 import numpy as np
+
 from Orange import data
 
 
@@ -31,6 +33,18 @@ def _get_variable(dat, variable, expected_type=None, expected_name=""):
 
 
 class Discrete(np.ndarray):
+    """
+    Discrete distribution.
+
+    .. attribute:: unknowns
+
+        Number of unknown values.
+
+    .. attribute:: variable
+
+        The variable used to compute the distribution.
+
+    """
     def __new__(cls, dat, variable=None, unknowns=None):
         if isinstance(dat, data.Storage):
             if unknowns is not None:
@@ -58,6 +72,12 @@ class Discrete(np.ndarray):
 
     @classmethod
     def from_data(cls, data, variable):
+        """
+        Compute the distribution of `variable` in `data`.
+
+        :param Orange.data.Table data:
+        :param Orange.data.Variable variable:
+        """
         variable = _get_variable(data, variable)
         try:
             dist, unknowns = data._compute_distributions([variable])[0]
@@ -183,6 +203,18 @@ class Discrete(np.ndarray):
 
 
 class Continuous(np.ndarray):
+    """
+    Continuous distribution.
+
+    .. attribute:: unknowns
+
+        Number of unknown values.
+
+    .. attribute:: variable
+
+        The variable used to compute the distribution.
+
+    """
     def __new__(cls, dat, variable=None, unknowns=None):
         if isinstance(dat, data.Storage):
             if unknowns is not None:
@@ -205,6 +237,12 @@ class Continuous(np.ndarray):
 
     @classmethod
     def from_data(cls, variable, data):
+        """
+        Compute the distribution of `variable` in `data`.
+
+        :param Orange.data.Table data:
+        :param Orange.data.Variable variable:
+        """
         variable = _get_variable(data, variable)
         try:
             dist, unknowns = data._compute_distributions([variable])[0]
@@ -286,6 +324,15 @@ def class_distribution(data):
 
 
 def get_distribution(dat, variable, unknowns=None):
+    """
+    Compute the distribution of `variable` in `dat`.
+
+    :param Orange.data.Table dat:
+    :param Orange.data.Variable variable:
+    :param unknowns: number of unknown values
+
+    :return: :class:`Discrete` or :class:`Continuous` distribution of variable
+    """
     variable = _get_variable(dat, variable)
     if isinstance(variable, data.DiscreteVariable):
         return Discrete(dat, variable, unknowns)
@@ -326,11 +373,14 @@ def get_distributions_for_columns(data, columns):
     """
     Compute the distributions for columns.
 
+    Calls the function :class:`get_distribution` for each variable in `columns`.
+
     :param Orange.data.Table data:
     :param list columns:
-        List of column indices into the `data.domain` (indices can be
-        :class:`int` or instances of `Orange.data.Variable`)
+        List of column indices in `data.domain` (indices can be
+        :class:`int` or instances of :class:`Orange.data.Variable`)
 
+    :return: list of distributions
     """
     domain = data.domain
     # Normailze the columns to int indices
