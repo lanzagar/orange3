@@ -1,6 +1,7 @@
 from numbers import Real
 from math import isnan
 
+
 #: A constant representing unknown value (NaN). Use this for storing unknowns,
 #: but not for checking for unknowns.
 Unknown = float("nan")
@@ -62,7 +63,7 @@ class Value(float):
         :type variable: Orange.data.Variable
         :param value: value
         """
-        if not isinstance(value, str):
+        if variable.is_primitive() or not isinstance(value, str):
             try:
                 self = super().__new__(cls, value)
             except:
