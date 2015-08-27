@@ -272,6 +272,7 @@ class ContinuousVariable(Variable):
         """
         Return the value as a string with the prescribed number of decimals.
         """
+        val = float(val)
         if isnan(val):
             return "?"
         return self._out_format % val
