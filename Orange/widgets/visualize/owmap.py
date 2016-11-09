@@ -54,6 +54,8 @@ class LeafletMap(WebviewWidget):
 
         self._drawing_args = None
         self._image_token = None
+        self._prev_map_pane_pos = None
+        self._prev_origin = None
         self._overlay_image_path = mkstemp(prefix='orange-Map-', suffix='.png')[1]
 
     def __del__(self):
@@ -119,7 +121,7 @@ class LeafletMap(WebviewWidget):
             if (window.jittering_percent == 0)
                 clear_jittering();
         '''.format(jittering))
-        self.redraw_markers_overlay_image()
+        self.redraw_markers_overlay_image(new_image=True)
 
     @staticmethod
     def _legend_values(variable, values):
@@ -163,7 +165,7 @@ class LeafletMap(WebviewWidget):
                                         for i in range(len(_values))]]
         finally:
             if update:
-                self.redraw_markers_overlay_image()
+                self.redraw_markers_overlay_image(new_image=True)
 
     def set_marker_label(self, attr, update=True):
         try:
@@ -179,7 +181,7 @@ class LeafletMap(WebviewWidget):
                 self._label_values = _values[__values]  # The design had lead to poor code for ages
         finally:
             if update:
-                self.redraw_markers_overlay_image()
+                self.redraw_markers_overlay_image(new_image=True)
 
     def set_marker_shape(self, attr, update=True):
         try:
@@ -196,7 +198,7 @@ class LeafletMap(WebviewWidget):
                                    list(_values)]
         finally:
             if update:
-                self.redraw_markers_overlay_image()
+                self.redraw_markers_overlay_image(new_image=True)
 
     def set_marker_size(self, attr, update=True):
         try:
@@ -214,17 +216,17 @@ class LeafletMap(WebviewWidget):
                                                      [min, np.nanmax(values)]) if not np.isnan(min) else []
         finally:
             if update:
-                self.redraw_markers_overlay_image()
+                self.redraw_markers_overlay_image(new_image=True)
 
     def set_marker_size_coefficient(self, size):
         self._size_coef = size / 100
         self.evalJS('''set_marker_size_coefficient({});'''.format(size / 100))
-        self.redraw_markers_overlay_image()
+        self.redraw_markers_overlay_image(new_image=True)
 
     def set_marker_opacity(self, opacity):
         self._opacity = 255 * opacity // 100
         self.evalJS('''set_marker_opacity({});'''.format(opacity / 100))
-        self.redraw_markers_overlay_image()
+        self.redraw_markers_overlay_image(new_image=True)
 
     def set_model(self, model):
         self.model = model
@@ -321,7 +323,7 @@ class LeafletMap(WebviewWidget):
     N_POINTS_PER_ITER = 1000
 
     @pyqtSlot(float, float, float, float, int, int, float, 'QVariantList', 'QVariantList')
-    def redraw_markers_overlay_image(self, *args):
+    def redraw_markers_overlay_image(self, *args, new_image=False):
         if (not args and not self._drawing_args or
                 self.lat_attr is None or self.lon_attr is None):
             return
@@ -362,8 +364,17 @@ class LeafletMap(WebviewWidget):
                     if self._selected_indices is not None else
                     np.zeros(len(lat), dtype=bool))
         cur = 0
-        im = QImage(width, height, QImage.Format_ARGB32)
-        im.fill(Qt.transparent)
+
+        im = QImage(self._overlay_image_path)
+        if im.isNull() or self._prev_origin != origin or new_image:
+            im = QImage(width, height, QImage.Format_ARGB32)
+            im.fill(Qt.transparent)
+        else:
+            dx, dy = self._prev_map_pane_pos - map_pane_pos
+            im = im.copy(dx, dy, width, height)
+        self._prev_map_pane_pos = np.array(map_pane_pos)
+        self._prev_origin = origin
+
         painter = QPainter(im)
         painter.setRenderHint(QPainter.Antialiasing, True)
         self.evalJS('clear_markers_overlay_image(); markersImageLayer.setBounds(map.getBounds());0')
