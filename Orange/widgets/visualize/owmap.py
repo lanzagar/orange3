@@ -60,6 +60,7 @@ class LeafletMap(WebviewWidget):
 
     def __del__(self):
         os.remove(self._overlay_image_path)
+        self._image_token = np.nan
 
     def set_data(self, data, lat_attr, lon_attr):
         self.data = data
@@ -626,6 +627,10 @@ class OWMap(widget.OWWidget):
 
     autocommit = settings.Setting(True)
 
+    def __del__(self):
+        self.progressBarFinished(None)
+        self.map = None
+
     def commit(self):
         self.send('Selected Data', self.selection)
 
@@ -669,6 +674,8 @@ class OWMap(widget.OWWidget):
             self.lat_attr = lat.name
             self.lon_attr = lon.name
             self.map.set_data(self.data, lat, lon)
+        else:
+            self.map.set_data(None, None, None)
         self._combo_color.setCurrentIndex(0)
         self._combo_shape.setCurrentIndex(0)
         self._combo_size.setCurrentIndex(0)
