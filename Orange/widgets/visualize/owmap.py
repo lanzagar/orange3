@@ -42,6 +42,7 @@ class LeafletMap(WebviewWidget):
         self.lon_attr = None
         self.data = None
         self.model = None
+        self._domain = None
 
         self._jittering = None
         self._color_attr = None
@@ -73,7 +74,11 @@ class LeafletMap(WebviewWidget):
 
         self.lat_attr = data.domain[lat_attr]
         self.lon_attr = data.domain[lon_attr]
-        self.fit_to_bounds(False)
+
+        fit_bounds = self._domain is not data.domain
+        self._domain = data.domain
+        if fit_bounds:
+            self.fit_to_bounds(True)
 
     @pyqtSlot()
     def fit_to_bounds(self, fly=True):
