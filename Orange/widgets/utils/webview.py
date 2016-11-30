@@ -382,8 +382,9 @@ if HAVE_WEBKIT:
             _WebViewBase.__init__(self)
 
             def load_finished():
-                self.frame.addToJavaScriptWindowObject('__self', self)
-                self._evalJS('setTimeout(function(){ __self._load_really_finished(); }, 100);')
+                if not sip.isdeleted(self):
+                    self.frame.addToJavaScriptWindowObject('__self', self)
+                    self._evalJS('setTimeout(function(){ __self._load_really_finished(); }, 100);')
             self.loadFinished.connect(load_finished)
 
         @pyqtSlot()
